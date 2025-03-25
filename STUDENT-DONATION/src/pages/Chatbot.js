@@ -1,5 +1,5 @@
 import React from "react";
 
 export default function Chatbot() {
-  return <h1>Chatbot Page</h1>;
+  return <h1>ChatBot Page</h1>;
 }
