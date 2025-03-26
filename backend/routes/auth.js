@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
 const User = require("../models/User");
+const { registerUser, loginUser, logoutUser } = require("../controllers/authController");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
@@ -21,33 +23,7 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { name, email, password } = req.body;
-
-    try {
-      let user = await User.findOne({ email });
-      if (user) {
-        return res.status(400).json({ msg: "User already exists" });
-      }
-
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      user = new User({
-        name,
-        email,
-        password: hashedPassword,
-      });
-
-      await user.save();
-
-      const payload = { user: { id: user.id } };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-      res.json({ token });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server Error");
-    }
+    registerUser(req, res);
   }
 );
 
@@ -65,28 +41,12 @@ router.post(
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
-
-    try {
-      let user = await User.findOne({ email });
-      if (!user) {
-        return res.status(400).json({ msg: "Invalid Credentials" });
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ msg: "Invalid Credentials" });
-      }
-
-      const payload = { user: { id: user.id } };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
-
-      res.json({ token });
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).send("Server Error");
-    }
+    loginUser(req, res);
   }
 );
+
+// @route   POST /auth/logout
+// @desc    Logout user
+router.post("/logout", logoutUser);
 
 module.exports = router;
