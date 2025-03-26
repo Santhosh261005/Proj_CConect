@@ -9,6 +9,7 @@
   "dependencies": {
     "@svgr/plugin-svgo": "^8.1.0",
     "@svgr/webpack": "^8.1.0",
+    "axios": "^1.8.4",
     "css-select": "^5.1.0",
     "nth-check": "^2.1.1",
     "postcss-place": "^10.0.0",

@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken');
 // Register a new user
 exports.registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
         // Validate input
         if (!name || !email || !password) {
@@ -22,13 +22,16 @@ exports.registerUser = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
+        // Set default role as "user" if not provided
+        const userRole = role || 'user';
+
         // Create user
-        const user = await User.create({ name, email, password: hashedPassword });
+        const user = await User.create({ name, email, password: hashedPassword, role: userRole });
 
         res.status(201).json({ 
             success: true, 
             message: 'User registered successfully', 
-            user: { id: user._id, name: user.name, email: user.email } 
+            user: { id: user._id, name: user.name, email: user.email, role: user.role } 
         });
     } catch (error) {
         console.error('Error registering user:', error);
@@ -58,7 +61,7 @@ exports.loginUser = async (req, res) => {
             return res.status(400).json({ success: false, message: 'Invalid email or password' });
         }
 
-        // Generate token
+        // Generate token with role
         const token = jwt.sign(
             { id: user._id, role: user.role },
             process.env.JWT_SECRET,

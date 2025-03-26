@@ -1,8 +1,5 @@
 const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
-const User = require("../models/User");
 const { registerUser, loginUser, logoutUser } = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -48,5 +45,16 @@ router.post(
 // @route   POST /auth/logout
 // @desc    Logout user
 router.post("/logout", logoutUser);
+
+// @route   GET /auth/me
+// @desc    Get current logged-in user
+// @access  Private (Requires valid token)
+router.get("/me", authMiddleware, async (req, res) => {
+  try {
+    res.json({ success: true, user: req.user }); // req.user is set in authMiddleware
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
 module.exports = router;
